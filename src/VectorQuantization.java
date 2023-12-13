@@ -134,7 +134,15 @@ public class VectorQuantization {
 
     private static BufferedImage nearestCodeBook(BufferedImage img){
         double minDistance = Double.MAX_VALUE;
-        
+        BufferedImage nearestCodeBook = null;
+        for (Map.Entry<Integer, BufferedImage> codeBook : codeBooks.entrySet()) {
+            double distance = calcDistance(img,codeBook.getValue());
+            if(distance < minDistance){
+                minDistance = distance;
+                nearestCodeBook = codeBook.getValue();
+            }
+        }
+        return nearestCodeBook;
     }
 
     private static BufferedImage getAVG(ArrayList<BufferedImage> subImages) {
