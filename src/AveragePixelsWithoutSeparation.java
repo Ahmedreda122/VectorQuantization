@@ -59,7 +59,39 @@ public class AveragePixelsWithoutSeparation {
     }
     return image;
   }
-}
+
+
+  static double calcDistance(BufferedImage img1, BufferedImage img2) {
+    if (img1.getWidth() != img2.getWidth() || img1.getHeight() != img2.getHeight()) {
+      throw new IllegalArgumentException("Images should have the same dimensions");
+    }
+
+    double mse = 0;
+    for (int y = 0; y < img1.getHeight(); y++) {
+      for (int x = 0; x < img1.getWidth(); x++) {
+        int rgb1 = img1.getRGB(x, y);
+        int rgb2 = img2.getRGB(x, y);
+
+        int red1 = (rgb1 >> 16) & 0xFF;
+        int green1 = (rgb1 >> 8) & 0xFF;
+        int blue1 = rgb1 & 0xFF;
+
+        int red2 = (rgb2 >> 16) & 0xFF;
+        int green2 = (rgb2 >> 8) & 0xFF;
+        int blue2 = rgb2 & 0xFF;
+
+        double redDiff = Math.pow(red1 - red2, 2);
+        double greenDiff = Math.pow(green1 - green2, 2);
+        double blueDiff = Math.pow(blue1 - blue2, 2);
+        mse += redDiff + greenDiff + blueDiff;
+      }
+      // Calculate mean squared error
+      mse /= (double) (img1.getWidth() * img1.getHeight());
+
+    }
+    return mse;
+
+  }}
 
 
 
