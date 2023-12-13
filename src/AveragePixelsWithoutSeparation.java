@@ -19,7 +19,6 @@ public class AveragePixelsWithoutSeparation {
       BufferedImage inputImage = VectorQuantization.loadImage(Paths.get("src/input1.jpg"));
       int width = inputImage.getWidth();
       int height = inputImage.getHeight();
-
       BufferedImage sub = inputImage.getSubimage(0 , 0, width, height);
       File fileout = new File("src/output.jpg");
 
@@ -32,7 +31,7 @@ public class AveragePixelsWithoutSeparation {
 //        }
 //      System.out.println("mmmm");
   convertToGrayscale(sub);
-      ImageIO.write(sub, "jpg", fileout);
+      ImageIO.write(sub, "bmp", fileout);
 
       // Create the output image with the same dimensions as the input image
 //            BufferedImage outputImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
@@ -49,19 +48,17 @@ public class AveragePixelsWithoutSeparation {
     }
 
   }
-  public static float[][] convertToGrayscale(BufferedImage image) {
+  public static BufferedImage convertToGrayscale(BufferedImage image) {
     int width = image.getWidth();
     int height = image.getHeight();
     float[][] grayscalePixels = new float[height][width];
 
     for (int i = 0; i < height; i++) {
       for (int j = 0; j < width; j++) {
-        int rgb = image.getRGB(j, i);
-        int pixel = rgb & 0xFF;
-        grayscalePixels[i][j] = pixel;
+        image.setRGB(j, i, image.getRGB(j, i) & 0xFF);
       }
     }
-    return grayscalePixels;
+    return image;
   }
 }
 
