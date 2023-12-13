@@ -51,7 +51,6 @@ public class AveragePixelsWithoutSeparation {
   public static BufferedImage convertToGrayscale(BufferedImage image) {
     int width = image.getWidth();
     int height = image.getHeight();
-    float[][] grayscalePixels = new float[height][width];
 
     for (int i = 0; i < height; i++) {
       for (int j = 0; j < width; j++) {

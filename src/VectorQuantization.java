@@ -2,6 +2,11 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 
 public class VectorQuantization {
     private static LinkedHashMap<Integer, BufferedImage> codeBooks;
