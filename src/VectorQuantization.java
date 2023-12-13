@@ -3,13 +3,12 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 
 
 public class VectorQuantization {
     private static LinkedHashMap<Integer, BufferedImage> codeBooks;
+    private static ArrayList<BufferedImage> subImages;
 
     public static BufferedImage loadImage(Path imgPath) throws IOException {
         // Load the image
@@ -60,12 +59,10 @@ public class VectorQuantization {
             // The amount of pixels we will add to the image width to make it dividable by CodeBook Width
             widthDiff = CBWidth - modX;
         }
-
         if (modY != 0) {
             // The amount of pixels we will add to the image height to make it dividable by CodeBook height
             heightDiff = CBHeight - modY;
         }
-
         BufferedImage newImg;
         if (widthDiff != 0 && heightDiff != 0) {
             // Create a new BufferedImage with the new dimensions which can be dividable by codeBooks width and height
@@ -77,24 +74,22 @@ public class VectorQuantization {
                     newImg.setRGB(x, y, originalImg.getRGB(x, y));
                 }
             }
+
         } else {
             newImg = originalImg;
         }
-//        int c = 0
-        ArrayList<BufferedImage> subImages = new ArrayList<>();
+
         for (int y = 0; y < newImg.getHeight() / CBHeight; y++) {
             for (int x = 0; x < newImg.getWidth() / CBWidth; x++) {
                 BufferedImage sub = newImg.getSubimage(CBWidth * x, CBHeight * y, CBWidth, CBHeight);
                 subImages.add(sub);
-                //saveImage(Paths.get("src/subImage" + ++c + ".bmp"), sub, "bmp");
             }
         }
 
         BufferedImage avgImg = getAVG(subImages);
         codeBooks.put(codeBooks.size(), avgImg);
-
         for (Map.Entry<Integer, BufferedImage> codeBook : codeBooks.entrySet()) {
-            while (codeBooks.size() < 4) {
+            while (codeBooks.size() < nCodeBooks) {
                 BufferedImage rightImg = new BufferedImage(CBWidth, CBHeight, BufferedImage.TYPE_INT_RGB);
                 BufferedImage leftImg = new BufferedImage(CBWidth, CBHeight, BufferedImage.TYPE_INT_RGB);
                 // Splitting
@@ -126,18 +121,78 @@ public class VectorQuantization {
             break;
         }
 
+        // For ODD nCodeBooks
+        while (codeBooks.size() != nCodeBooks) {
+            codeBooks.replace(0, codeBooks.get(codeBooks.size()));
+            codeBooks.remove(codeBooks.size());
+        }
 
-        // TODO: Optimization for CodeBooks
+        // Key=> Distance, Value => CodeBookKey
+        // Distance between current SubImage and the CodeBook that we store its key in the "Value"
+        HashMap<Double, Integer> distances = new HashMap<>();
+        // Key => CodeBook Key , List of SubImages that nearer to this codeBook
+        HashMap<Integer, ArrayList<BufferedImage>> nearestSubImages = new HashMap<>();
 
-        return null;
+        for (int i = 0; i < 50; ++i) {
+            for (BufferedImage subImage : subImages) {
+                for (Map.Entry<Integer, BufferedImage> codeBook : codeBooks.entrySet()) {
+                    // calc all subImage distances with the codebooks
+                    distances.put(calcDistance(subImage, codeBook.getValue()), codeBook.getKey());
+                }
+                // Finding the Nearest Distance
+                Double minDistance = findMinValue(distances);
+                // Nearest CodeBook to the current SubImage
+                Integer codeBookKey = distances.get(minDistance);
+
+                if (nearestSubImages.containsKey(codeBookKey)) {
+                    nearestSubImages.get(codeBookKey).add(subImage);
+                } else {
+                    ArrayList<BufferedImage> subImgs = new ArrayList<>();
+                    subImgs.add(subImage);
+                    nearestSubImages.put(codeBookKey, subImgs);
+                }
+                distances.clear();
+            }
+            int counter = 0;
+            for (Map.Entry<Integer, ArrayList<BufferedImage>> nearestSubImgs : nearestSubImages.entrySet()) {
+                BufferedImage newCodeBook = getAVG(nearestSubImgs.getValue());
+                BufferedImage oldCodeBooks = codeBooks.get(nearestSubImgs.getKey());
+                if (newCodeBook.equals(oldCodeBooks)){
+                    counter++;
+                }
+                codeBooks.replace(nearestSubImgs.getKey(), newCodeBook);
+            }
+            if(counter == codeBooks.size()){
+                return codeBooks;
+            }
+            else{
+                counter = 0;
+            }
+            nearestSubImages.clear();
+        }
+        return codeBooks;
     }
 
-    private static BufferedImage nearestCodeBook(BufferedImage img){
+    private static BufferedImage assignCodeBooks(LinkedHashMap<Integer, BufferedImage> codeBooks, int height,int width){
+        subImages.replaceAll(VectorQuantization::nearestCodeBook);
+        // TODO: Saparate To method
+        BufferedImage compressedImg = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+        // Copy original image to the new image
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                for(BufferedImage subImg: subImages) {
+                    compressedImg.setRGB(x, y, subImg.getRGB(x, y));
+                }
+            }
+        }
+        return compressedImg;
+    }
+    private static BufferedImage nearestCodeBook(BufferedImage img) {
         double minDistance = Double.MAX_VALUE;
         BufferedImage nearestCodeBook = null;
         for (Map.Entry<Integer, BufferedImage> codeBook : codeBooks.entrySet()) {
-            double distance = calcDistance(img,codeBook.getValue());
-            if(distance < minDistance){
+            double distance = calcDistance(img, codeBook.getValue());
+            if (distance < minDistance) {
                 minDistance = distance;
                 nearestCodeBook = codeBook.getValue();
             }
