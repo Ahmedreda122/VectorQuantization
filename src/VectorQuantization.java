@@ -123,15 +123,16 @@ public class VectorQuantization {
                 codeBooks.put(codeBooks.size(), newCodeBook);
                 codeBooks.put(codeBooks.size(), newCodeBook2);
             }
+            break;
         }
 
 
-        // TODO: Create a Structure holds the CodeBooks and that Structure Provide Deletion and Insertion Operations FAST
+        // TODO: Optimization for CodeBooks
 
         return null;
     }
 
-    private static int nearestCodeBook(BufferedImage img){
+    private static BufferedImage nearestCodeBook(BufferedImage img){
         double minDistance = Double.MAX_VALUE;
         
     }
@@ -152,7 +153,6 @@ public class VectorQuantization {
         }
         return avgImg;
     }
-
 
     public static void main(String[] args) throws IOException {
         BufferedImage img = loadImage(Paths.get("src/input.jpg"));
