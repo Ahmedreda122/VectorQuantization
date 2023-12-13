@@ -175,7 +175,7 @@ public class VectorQuantization {
         return codeBooks;
     }
 
-    private static BufferedImage assignCodeBooks(LinkedHashMap<Integer, BufferedImage> codeBooks, int height,int width){
+    public static BufferedImage assignCodeBooks(LinkedHashMap<Integer, BufferedImage> codeBooks, int height,int width){
         subImages.replaceAll(VectorQuantization::nearestCodeBook);
         // TODO: Saparate To method
         BufferedImage compressedImg = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
