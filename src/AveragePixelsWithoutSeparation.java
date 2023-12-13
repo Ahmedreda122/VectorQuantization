@@ -3,24 +3,53 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Scanner;
 import javax.imageio.ImageIO;
 
 public class AveragePixelsWithoutSeparation {
+  private static BufferedImage getAVG(ArrayList<BufferedImage> subImages) {
+    int CBHeight = subImages.get(0).getHeight();
+    int CBWidth = subImages.get(0).getWidth();
+    BufferedImage avgImg = new BufferedImage(CBWidth, CBHeight, BufferedImage.TYPE_INT_RGB);
+
+    for (int y = 0; y < CBHeight; y++) {
+      for (int x = 0; x < CBWidth; x++) {
+        int redSum = 0;
+        int greenSum = 0;
+        int blueSum = 0;
+
+        for (BufferedImage subImage : subImages) {
+          int pixel = subImage.getRGB(x, y);
+          redSum += (pixel >> 16) & 0xFF;
+          greenSum += (pixel >> 8) & 0xFF;
+          blueSum += (pixel) & 0xFF;
+        }
+
+        int avgRed = redSum / subImages.size();
+        int avgGreen = greenSum / subImages.size();
+        int avgBlue = blueSum / subImages.size();
+
+        int avgPixel = (avgRed << 16) | (avgGreen << 8) | avgBlue;
+        avgImg.setRGB(x, y, avgPixel);
+      }
+    }
+    return avgImg;
+  }
 
 
   public static void main(String[] args) {
-    try {
-      Scanner scan = new Scanner(System.in);
-      int codeBookSize = scan.nextInt();
-//    Vector Dimensions (n*m) (block)
-      int n = scan.nextInt();
-      int m = scan.nextInt();
-      BufferedImage inputImage = VectorQuantization.loadImage(Paths.get("src/input1.jpg"));
-      int width = inputImage.getWidth();
-      int height = inputImage.getHeight();
-      BufferedImage sub = inputImage.getSubimage(0 , 0, width, height);
-      File fileout = new File("src/output.jpg");
+//    try {
+//      Scanner scan = new Scanner(System.in);
+//      int codeBookSize = scan.nextInt();
+////    Vector Dimensions (n*m) (block)
+//      int n = scan.nextInt();
+//      int m = scan.nextInt();
+//      BufferedImage inputImage = VectorQuantization.loadImage(Paths.get("src/input1.jpg"));
+//      int width = inputImage.getWidth();
+//      int height = inputImage.getHeight();
+//      BufferedImage sub = inputImage.getSubimage(0 , 0, width, height);
+//      File fileout = new File("src/output.jpg");
 
 //      BufferedImage image2 = new BufferedImage(w, h, BufferedImage.TYPE_3BYTE_BGR);
 //
@@ -30,8 +59,8 @@ public class AveragePixelsWithoutSeparation {
 //          image2.setRGB(y, x, value);
 //        }
 //      System.out.println("mmmm");
-  convertToGrayscale(sub);
-      ImageIO.write(sub, "bmp", fileout);
+//  convertToGrayscale(sub);
+//      ImageIO.write(sub, "bmp", fileout);
 
       // Create the output image with the same dimensions as the input image
 //            BufferedImage outputImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
@@ -43,9 +72,24 @@ public class AveragePixelsWithoutSeparation {
 //            VectorQuantization.saveImage(Paths.get("src/output.jpg"), outputImage, "jpg");
 //
 //            System.out.println("Output image saved successfully.");
+//    } catch (IOException e) {
+//      System.out.println("Error occurred: " + e.getMessage());
+//    }
+    try {
+      BufferedImage img1 = VectorQuantization.loadImage(Paths.get("src/input1.jpg"));
+      BufferedImage img2 = VectorQuantization.loadImage(Paths.get("src/input.jpg"));
+      ArrayList<BufferedImage> subImages = new ArrayList<>();
+      subImages.add(img1);
+      subImages.add(img2);
+      // شغالةةةةةةة بص الصوره
+      // معلقة عندي
+      BufferedImage avg = getAVG(subImages);
+     // saveImage(Paths.get("src/compressed_output.jpg"), compressedImg, "bmp");
+
     } catch (IOException e) {
-      System.out.println("Error occurred: " + e.getMessage());
+      throw new RuntimeException(e);
     }
+
 
   }
   public static BufferedImage convertToGrayscale(BufferedImage image) {
