@@ -81,8 +81,6 @@ public class AveragePixelsWithoutSeparation {
       ArrayList<BufferedImage> subImages = new ArrayList<>();
       subImages.add(img1);
       subImages.add(img2);
-      // شغالةةةةةةة بص الصوره
-      // معلقة عندي
       BufferedImage avg = getAVG(subImages);
      // saveImage(Paths.get("src/compressed_output.jpg"), compressedImg, "bmp");
 

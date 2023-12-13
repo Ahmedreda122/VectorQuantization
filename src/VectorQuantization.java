@@ -95,14 +95,14 @@ public class VectorQuantization {
     private static ArrayList<ArrayList<BufferedImage>> DivideImgToMatrixofSubImgs(BufferedImage originalImg, int CBWidth, int CBHeight) {
         BufferedImage newImg = MakeImgDividable(originalImg, CBWidth, CBHeight);
         ArrayList<ArrayList<BufferedImage>> subImgsMatrix = new ArrayList<>();
-        ArrayList<BufferedImage> rowSubImages = new ArrayList<>();
         for (int y = 0; y < newImg.getHeight() / CBHeight; y++) {
+            ArrayList<BufferedImage> rowSubImages = new ArrayList<>();
             for (int x = 0; x < newImg.getWidth() / CBWidth; x++) {
                 BufferedImage sub = newImg.getSubimage(CBWidth * x, CBHeight * y, CBWidth, CBHeight);
                 rowSubImages.add(sub);
+//                saveImage(Paths.get("src/codeBook"+  y  +" "+ x +".jpg"), sub, "jpg");
             }
             subImgsMatrix.add(rowSubImages);
-            rowSubImages.clear();
         }
         return subImgsMatrix;
     }
@@ -148,7 +148,7 @@ public class VectorQuantization {
         }
 
         // For ODD nCodeBooks
-        while (codeBooks.size() != nCodeBooks) {
+        while (codeBooks.size() > nCodeBooks) {
             codeBooks.replace(0, codeBooks.get(codeBooks.size()));
             codeBooks.remove(codeBooks.size());
         }
@@ -158,8 +158,8 @@ public class VectorQuantization {
         HashMap<Double, Integer> distances = new HashMap<>();
         // Key => CodeBook Key , List of SubImages that nearer to this codeBook
         HashMap<Integer, ArrayList<BufferedImage>> nearestSubImages = new HashMap<>();
-
-        for (int i = 0; i < 50; ++i) {
+        int counter = 0;
+        for (int i = 0; i < 200; ++i) {
             for (BufferedImage subImage : subImages) {
                 for (Map.Entry<Integer, BufferedImage> codeBook : codeBooks.entrySet()) {
                     // calc all subImage distances with the codebooks
@@ -179,7 +179,7 @@ public class VectorQuantization {
                 }
                 distances.clear();
             }
-            int counter = 0;
+
             for (Map.Entry<Integer, ArrayList<BufferedImage>> nearestSubImgs : nearestSubImages.entrySet()) {
                 BufferedImage newCodeBook = getAVG(nearestSubImgs.getValue());
                 BufferedImage oldCodeBooks = codeBooks.get(nearestSubImgs.getKey());
@@ -199,19 +199,30 @@ public class VectorQuantization {
     }
 
     public static BufferedImage assignCodeBooks(LinkedHashMap<Integer, BufferedImage> codeBooks, BufferedImage originalImg, int CBWidth, int CBHeight) {
+
         ArrayList<ArrayList<BufferedImage>> matrix = DivideImgToMatrixofSubImgs(originalImg, CBWidth, CBHeight);
         for (ArrayList<BufferedImage> rowSubImages : matrix) {
             rowSubImages.replaceAll(VectorQuantization::nearestCodeBook);
         }
 
         BufferedImage compressedImg = new BufferedImage(originalImg.getWidth(), originalImg.getHeight(), BufferedImage.TYPE_INT_RGB);
+        int posX = 0;
+        int posY = 0;
 
-        for (int i = 0; i < matrix.size(); ++i) {
-            for (int j = 0; j < matrix.get(i).size(); ++j) {
-                for (int y = 0; y < CBHeight; y++) {
-                    for (int x = 0; x < CBWidth; x++) {
-                        compressedImg.setRGB(x + (j * CBWidth), y + (i * CBHeight), matrix.get(i).get(j).getRGB(x, y));
+        for (ArrayList<BufferedImage> row : matrix) {
+            for (BufferedImage subImage : row) {
+                int subImgWidth = subImage.getWidth();
+                int subImgHeight = subImage.getHeight();
+
+                for (int y = 0; y < subImgHeight && posY + y < compressedImg.getHeight(); y++) {
+                    for (int x = 0; x < subImgWidth && posX + x < compressedImg.getWidth(); x++) {
+                        compressedImg.setRGB(posX + x, posY + y, subImage.getRGB(x, y));
                     }
+                }
+                posX += CBWidth;
+                if (posX >= compressedImg.getWidth()) {
+                    posX = 0;
+                    posY += CBHeight;
                 }
             }
         }
@@ -275,9 +286,9 @@ public class VectorQuantization {
 
 
     public static void main(String[] args) throws IOException {
-        BufferedImage img = loadImage(Paths.get("src/input1.jpg"));
-        LinkedHashMap<Integer, BufferedImage> codeBooks = compress(img, 4, 50, 50);
-        BufferedImage compressedImg = assignCodeBooks(codeBooks, img,50,50);
-        saveImage(Paths.get("src/compressed_output.jpg"), compressedImg, "bmp");
+        BufferedImage img = loadImage(Paths.get("src/img.png"));
+        LinkedHashMap<Integer, BufferedImage> codeBooks = compress(img, 90, 8, 8);
+        BufferedImage compressedImg = assignCodeBooks(codeBooks, img,8,8);
+        saveImage(Paths.get("src/compressed_output.bmp"), compressedImg, "bmp");
     }
 }
