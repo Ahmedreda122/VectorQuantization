@@ -48,7 +48,7 @@ public class VectorQuantization {
         return distance;
     }
 
-    public static BufferedImage compress(BufferedImage originalImg, int nCodeBooks, int CBWidth, int CBHeight) {
+    private static void DivideImgIntoSubImages(BufferedImage originalImg, int CBWidth, int CBHeight){
         int width = originalImg.getWidth();
         int height = originalImg.getHeight();
         int heightDiff = 0;
@@ -85,7 +85,9 @@ public class VectorQuantization {
                 subImages.add(sub);
             }
         }
-
+    }
+    public static LinkedHashMap<Integer, BufferedImage> compress(BufferedImage originalImg, int nCodeBooks, int CBWidth, int CBHeight) {
+        DivideImgIntoSubImages(originalImg, CBWidth, CBHeight);
         BufferedImage avgImg = getAVG(subImages);
         codeBooks.put(codeBooks.size(), avgImg);
         for (Map.Entry<Integer, BufferedImage> codeBook : codeBooks.entrySet()) {
@@ -216,6 +218,20 @@ public class VectorQuantization {
         }
         return avgImg;
     }
+
+    private static Double findMinValue(HashMap<Double, Integer> map) {
+        // Initialize min with the maximum possible integer value
+        Double min = Double.MAX_VALUE;
+        // Iterate through the entries to find the minimum value
+        for (HashMap.Entry<Double, Integer> entry : map.entrySet()) {
+            Double currentValue = entry.getKey();
+            if (currentValue < min) {
+                min = currentValue;
+            }
+        }
+        return min;
+    }
+
 
     public static void main(String[] args) throws IOException {
         BufferedImage img = loadImage(Paths.get("src/input.jpg"));
