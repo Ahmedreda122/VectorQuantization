@@ -183,7 +183,7 @@ public class VectorQuantization {
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
                 for(BufferedImage subImg: subImages) {
-                    compressedImg.setRGB(x, y, subImg.getRGB(x, y));
+                    compressedImg.setRGB(x, y, subImg.getRGB(x % CBWidth, y % CBHeight));
                 }
             }
         }
