@@ -210,6 +210,11 @@ public class VectorQuantization {
   public static void writeCodeBooksToFile(String outputPath) throws IOException {
     // Try-with-resources statement to auto-close the writer
     try (BufferedWriter writer = new BufferedWriter(new FileWriter(outputPath))) {
+      writer.write(CBW+" ");
+      writer.write(CBH+" ");
+      writer.write(width+" ");
+      writer.write(height+" ");
+      writer.newLine();
       for (Map.Entry<Integer, BufferedImage> entry : codeBooks.entrySet()) {
         Integer key = entry.getKey();
         BufferedImage image = entry.getValue();
@@ -398,10 +403,17 @@ public class VectorQuantization {
 
   private static Map<Integer, BufferedImage> decompressedCodeBooks = new HashMap<>();
   private static Map<Integer, ArrayList<int[]>> decompressedCodeBookPositions = new HashMap<>();
+  private static int DecomCBW,DecomCBH,DecoWidth, DecoHeight;
 
   public static BufferedImage decompressData(String compressedDataPath) throws IOException {
     try (BufferedReader reader = new BufferedReader(new FileReader(compressedDataPath))) {
       String line;
+      line = reader.readLine();
+      String [] inputs = line.split(" ");
+      DecomCBW=Integer.parseInt(inputs[0]);
+      DecomCBH=Integer.parseInt(inputs[1]);
+      DecoWidth = Integer.parseInt(inputs[2]);
+      DecoHeight = Integer.parseInt(inputs[3]);
       boolean isCodeBookPositions = false;
       String key;
       while ((line = reader.readLine()) != null) {
@@ -459,7 +471,7 @@ public class VectorQuantization {
     Integer key = Integer.parseInt(parts[0]);
 
     // new BufferedImage for the code book entry
-    BufferedImage image = new BufferedImage(CBW, CBH, BufferedImage.TYPE_INT_RGB);
+    BufferedImage image = new BufferedImage(DecomCBW, DecomCBH, BufferedImage.TYPE_INT_RGB);
 
     int pixelIndex = 1;
     for (int y = 0; y < image.getHeight(); y++) {
@@ -476,7 +488,7 @@ public class VectorQuantization {
 
 
   private static BufferedImage generateDecompressedImage() {
-    BufferedImage decompressedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+    BufferedImage decompressedImage = new BufferedImage(DecoWidth, DecoHeight, BufferedImage.TYPE_INT_RGB);
 
     for (Map.Entry<Integer, ArrayList<int[]>> entry : decompressedCodeBookPositions.entrySet()) {
       Integer key = entry.getKey();
@@ -486,8 +498,8 @@ public class VectorQuantization {
         int x = position[0];
         int y = position[1];
 
-        for (int yy = 0; yy < CBH; yy++) {
-          for (int xx = 0; xx < CBW; xx++) {
+        for (int yy = 0; yy < DecomCBH; yy++) {
+          for (int xx = 0; xx < DecomCBW; xx++) {
 
             int codeBookRGB = codeBook.getRGB(xx, yy);
 
