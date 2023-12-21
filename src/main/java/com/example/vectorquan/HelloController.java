@@ -15,6 +15,7 @@ import java.nio.file.Paths;
 import java.util.LinkedHashMap;
 
 import static com.example.vectorquan.VectorQuantization.decompressData;
+import static com.example.vectorquan.VectorQuantization.writeCodeBooksToFile;
 
 public class HelloController {
   @FXML
@@ -34,13 +35,13 @@ public class HelloController {
     File file = fileChooser.showOpenDialog(new Stage());
     BufferedImage img = VectorQuantization.loadImage(Path.of(file.getAbsolutePath()));
     LinkedHashMap<Integer, BufferedImage> codeBooks = VectorQuantization.compress(img, Integer.parseInt(nCodebooks.getText()), Integer.parseInt(CDWidth.getText()), Integer.parseInt(CDHeight.getText()));
-    BufferedImage compressedImg = VectorQuantization.assignCodeBooks(codeBooks, img, Integer.parseInt(CDWidth.getText()), Integer.parseInt(CDHeight.getText()));
-    VectorQuantization.saveImage(Paths.get("compressed_output.bmp"), compressedImg, "bmp");
+    VectorQuantization.assignCodeBooks(codeBooks, img, Integer.parseInt(CDWidth.getText()), Integer.parseInt(CDHeight.getText()));
+    VectorQuantization.writeCodeBooksToFile("compressed.bin");
   }
   @FXML
   protected void onDecompressButtonClick() throws IOException {
     FileChooser fileChooser = new FileChooser();
-    fileChooser.setTitle("Select a file to deompress");
+    fileChooser.setTitle("Select a file to decompress");
     // Set the initial directory to the current directory
     fileChooser.setInitialDirectory(new File(System.getProperty("user.dir")));
     File file = fileChooser.showOpenDialog(new Stage());
